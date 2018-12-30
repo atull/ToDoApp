@@ -22,7 +22,7 @@ export default class CommentScreen extends React.Component {
   }
 
   onCommentAdded = (comment: string) => {
-    this.setState({ comments: [comment, ...this.state.comments] }, () => {
+    this.setState({ comments: [...this.state.comments, comment] }, () => {
       this.params.onCommentAdded(this.params.item, comment);
     });
   }
