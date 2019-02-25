@@ -1,13 +1,15 @@
 import React from 'react';
 import { View, Image, Text, Platform, KeyboardAvoidingView, StyleSheet, FlatList, LayoutAnimation } from 'react-native';
 import { Header, TextInputBoard, PendingItem } from 'src/ui/elements';
+import { connect } from 'react-redux';
+import { addTask } from 'src/core/redux/actions';
 
 const store = require('react-native-simple-store');
 
 const { Font, Asset } = require('src/res');
 const { Constants } = require('src/core/utils');
 
-export default class HomeScreen extends React.Component {
+class HomeScreen extends React.Component {
   constructor(props) {
     super(props);
 
@@ -38,6 +40,7 @@ export default class HomeScreen extends React.Component {
       comments: [],
     };
     store.push(Constants.listStore, taskObj);
+    this.props.addTask(taskObj);
     this.setState({ pendingTasks: [taskObj, ...this.state.pendingTasks] });
   }
 
@@ -80,7 +83,8 @@ export default class HomeScreen extends React.Component {
       <FlatList
         style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
-        data={[...this.state.pendingTasks, ...this.state.completedTasks]}
+        // data={[...this.state.pendingTasks, ...this.state.completedTasks]}
+        data={this.props.taskList}
         ListEmptyComponent={<Text style={{ color: 'rgb(150, 150, 150)', alignSelf: 'center', marginTop: 100 }}>No task added</Text>}
         renderItem={({ item }) => {
           if (item.isCompleted) {
@@ -144,8 +148,15 @@ const styles = StyleSheet.create({
   },
   completedTaskText: {
     ...Font.body,
+    color: 'grey',
     marginLeft: 20,
     marginRight: 20,
     textDecorationLine: 'line-through',
   }
-})
+});
+
+const mapStateToProps = ({ task }) => ({
+  taskList: task.taskList,
+});
+
+export default connect(mapStateToProps, { addTask })(HomeScreen);
