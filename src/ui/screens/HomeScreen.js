@@ -1,34 +1,35 @@
 import React from 'react';
-import { View, Image, Text, Platform, KeyboardAvoidingView, StyleSheet, FlatList, LayoutAnimation } from 'react-native';
+import { View, Text, Platform, KeyboardAvoidingView, StyleSheet, FlatList, LayoutAnimation } from 'react-native';
 import { Header, TextInputBoard, PendingItem } from 'src/ui/elements';
 import { connect } from 'react-redux';
-import { addTask } from 'src/core/redux/actions';
+import { addNewTask, completeTask } from 'src/core/redux/actions';
 
-const store = require('react-native-simple-store');
+// const store = require('react-native-simple-store');
 
-const { Font, Asset } = require('src/res');
-const { Constants } = require('src/core/utils');
+const { Font } = require('src/res');
+const { Constants, CustomJSTypes } = require('src/core/utils');
 
 class HomeScreen extends React.Component {
-  constructor(props) {
-    super(props);
+  // constructor(props) {
+  //   super(props);
+  //
+  //   this.state = {
+  //     pendingTasks: [],
+  //     completedTasks: [],
+  //   };
+  // }
 
-    this.state = {
-      pendingTasks: [],
-      completedTasks: [],
-    };
-  }
+  // componentDidMount(): void {
+    // store.get([Constants.listStore, Constants.completedListStore])
+    //   .then((val) => {
+    //     const pendingTasks = (val[0]) ? val[0].reverse() : [];
+    //     const completedTasks = (val[1]) ? val[1].reverse() : [];
+    //       if (val) this.setState({ pendingTasks, completedTasks });
+    //   })
+    //   .catch(error => console.log('-> error :', error));
 
-  componentDidMount(): void {
-    store.get([Constants.listStore, Constants.completedListStore])
-      .then((val) => {
-        const pendingTasks = (val[0]) ? val[0].reverse() : [];
-        const completedTasks = (val[1]) ? val[1].reverse() : [];
-          if (val) this.setState({ pendingTasks, completedTasks });
-      })
-      .catch(error => console.log('-> error :', error));
     // store.delete([Constants.listStore, Constants.completedListStore]);
-  }
+  // }
 
   //* *********************************************
   //* *********************************************
@@ -39,40 +40,41 @@ class HomeScreen extends React.Component {
       isCompleted: false,
       comments: [],
     };
-    store.push(Constants.listStore, taskObj);
-    this.props.addTask(taskObj);
-    this.setState({ pendingTasks: [taskObj, ...this.state.pendingTasks] });
+    this.props.addNewTask(taskObj);
+    // store.push(Constants.listStore, taskObj);
+    // this.setState({ pendingTasks: [taskObj, ...this.state.pendingTasks] });
   }
 
-  onTaskDone = (item: any) => {
-    const index = this.state.pendingTasks.indexOf(item);
-    const updatedTaskList = [...this.state.pendingTasks];
-    updatedTaskList.splice(index, 1);
-    item.isCompleted = true;
+  onTaskDone = (taskObj: CustomJSTypes.TaskObjType) => {
+    // const index = this.state.pendingTasks.indexOf(taskObj);
+    // const updatedTaskList = [...this.state.pendingTasks];
+    // updatedTaskList.splice(index, 1);
+    // taskObj.isCompleted = true;
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    this.setState({ pendingTasks: updatedTaskList, completedTasks: [item, ...this.state.completedTasks] }, () => {
-      store.save(Constants.listStore, this.state.pendingTasks);
-      store.save(Constants.completedListStore, this.state.completedTasks);
-    });
+    this.props.completeTask(taskObj);
+    // this.setState({ pendingTasks: updatedTaskList, completedTasks: [taskObj, ...this.state.completedTasks] }, () => {
+    //   store.save(Constants.listStore, this.state.pendingTasks);
+    //   store.save(Constants.completedListStore, this.state.completedTasks);
+    // });
   }
 
-  onShowDetail = (item: any) => {
-    const params = {
-      item,
-      onCommentAdded: this.onCommentAdded,
-    };
-    this.props.navigation.navigate(Constants.screenRoutes.commentScreen, params);
+  onShowDetail = (taskObj: CustomJSTypes.TaskObjType) => {
+    // const params = {
+    //   taskObj,
+    //   // onCommentAdded: this.onCommentAdded,
+    // };
+    this.props.navigation.navigate(Constants.screenRoutes.commentScreen, { taskObj });
   }
 
-  onCommentAdded = (item: any, comment: string) => {
-    const index = this.state.pendingTasks.indexOf(item);
-    item.comments.push(comment);
-    const updatedTaskList = [...this.state.pendingTasks];
-    updatedTaskList.splice(index, 1, item);
-    this.setState({ pendingTasks: updatedTaskList }, () => {
-      store.save(Constants.listStore, this.state.pendingTasks);
-    });
-  }
+  // onCommentAdded = (taskObj: CustomJSTypes.TaskObjType, comment: string) => {
+  //   const index = this.state.pendingTasks.indexOf(taskObj);
+  //   taskObj.comments.push(comment);
+  //   const updatedTaskList = [...this.state.pendingTasks];
+  //   updatedTaskList.splice(index, 1, taskObj);
+  //   this.setState({ pendingTasks: updatedTaskList }, () => {
+  //     store.save(Constants.listStore, this.state.pendingTasks);
+  //   });
+  // }
 
 
   //* *********************************************
@@ -83,8 +85,8 @@ class HomeScreen extends React.Component {
       <FlatList
         style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
-        // data={[...this.state.pendingTasks, ...this.state.completedTasks]}
-        data={this.props.taskList}
+        data={[...this.props.pendingTaskList, ...this.props.completedTaskList]}
+        // data={this.props.taskList}
         ListEmptyComponent={<Text style={{ color: 'rgb(150, 150, 150)', alignSelf: 'center', marginTop: 100 }}>No task added</Text>}
         renderItem={({ item }) => {
           if (item.isCompleted) {
@@ -92,7 +94,7 @@ class HomeScreen extends React.Component {
               <View style={styles.completedTaskView}>
                 <Text style={styles.completedTaskText}>{item.label}</Text>
               </View>
-            )
+            );
           }
           return (
             <PendingItem
@@ -155,8 +157,10 @@ const styles = StyleSheet.create({
   }
 });
 
-const mapStateToProps = ({ task }) => ({
-  taskList: task.taskList,
-});
+const mapStateToProps = ({ task }) => {
+  const pendingTaskList = task.taskList.filter(taskObj => !taskObj.isCompleted);
+  const completedTaskList = task.taskList.filter(taskObj => taskObj.isCompleted);
+  return { pendingTaskList, completedTaskList };
+};
 
-export default connect(mapStateToProps, { addTask })(HomeScreen);
+export default connect(mapStateToProps, { addNewTask, completeTask })(HomeScreen);

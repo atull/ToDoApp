@@ -1,17 +1,19 @@
 import React from 'react';
 import {View, Text, Image, TouchableOpacity, StyleSheet, Platform, KeyboardAvoidingView, FlatList} from 'react-native';
 import {PendingItem, TextInputBoard} from 'src/ui/elements';
+import { connect } from 'react-redux';
+import { addCommentToTask } from 'src/core/redux/actions';
 
 const { Color, Asset, Font } = require('src/res');
 const { Sizer } = require('src/core/utils');
 
-export default class CommentScreen extends React.Component {
+class CommentScreen extends React.Component {
   constructor(props) {
     super(props);
 
     this.params = this.props.navigation.state.params;
     this.state = {
-      comments: this.params.item.comments,
+      comments: this.params.taskObj.comments,
     };
   }
   //* *********************************************
@@ -23,7 +25,8 @@ export default class CommentScreen extends React.Component {
 
   onCommentAdded = (comment: string) => {
     this.setState({ comments: [...this.state.comments, comment] }, () => {
-      this.params.onCommentAdded(this.params.item, comment);
+      // this.params.onCommentAdded(this.params.taskObj, comment);
+      this.props.addCommentToTask(this.params.taskObj, comment);
     });
   }
 
@@ -52,7 +55,6 @@ export default class CommentScreen extends React.Component {
         <KeyboardAvoidingView style={styles.textInputBox} behavior="padding">
           <TextInputBoard onSend={this.onCommentAdded} />
         </KeyboardAvoidingView>
-
       );
     }
 
@@ -69,7 +71,7 @@ export default class CommentScreen extends React.Component {
         <TouchableOpacity style={styles.backBtn} onPress={this.onBack}>
           <Image resizeMode="contain" style={styles.arrow} source={Asset.backArrow} />
         </TouchableOpacity>
-        <Text style={styles.heading}>{this.params.item.label}</Text>
+        <Text style={styles.heading}>{this.params.taskObj.label}</Text>
         {this.renderListView()}
         {this.renderTextInputBoard()}
       </View>
@@ -108,3 +110,5 @@ const styles = StyleSheet.create({
     paddingRight: 30,
   }
 });
+
+export default connect(null, { addCommentToTask })(CommentScreen);
