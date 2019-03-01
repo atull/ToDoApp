@@ -158,6 +158,7 @@ const styles = StyleSheet.create({
 });
 
 const mapStateToProps = ({ task }) => {
+  console.log('-> HomeScreen task.taskList : ', task.taskList);
   const pendingTaskList = task.taskList.filter(taskObj => !taskObj.isCompleted);
   const completedTaskList = task.taskList.filter(taskObj => taskObj.isCompleted);
   return { pendingTaskList, completedTaskList };

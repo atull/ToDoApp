@@ -16,6 +16,7 @@ class CommentScreen extends React.Component {
       comments: this.params.taskObj.comments,
     };
   }
+
   //* *********************************************
   //* *********************************************
   // Handlers ...
